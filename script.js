@@ -1,33 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather App</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+const apiKey = "3b34376fe1e03e035215c8d17b5b3784"; // 🔴 Replace here!
 
-    <div class="container">
-        <h2>Weather App</h2>
+async function getWeather() {
+    const city = document.getElementById("cityInput").value;
 
-        <div class="search-box">
-            <input type="text" id="cityInput" placeholder="Enter city name">
-            <button onclick="getWeather()">Search</button>
-        </div>
+    if (!city) return;
 
-        <div id="weatherDetails" class="weather-info hidden">
-            <h3 id="cityName"></h3>
-            <img id="icon" src="">
-            <p id="temperature"></p>
-            <p id="description"></p>
-            <p id="humidity"></p>
-            <p id="wind"></p>
-        </div>
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
 
-        <p id="errorMsg" class="error hidden">City not found. Try again.</p>
-    </div>
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
 
-<script src="script.js"></script>
-</body>
-</html>
+        if (data.cod === "404") {
+            document.getElementById("errorMsg").classList.remove("hidden");
+            document.getElementById("weatherDetails").classList.add("hidden");
+            return;
+        }
+
+        document.getElementById("errorMsg").classList.add("hidden");
+        document.getElementById("weatherDetails").classList.remove("hidden");
+
+        document.getElementById("cityName").innerText = data.name;
+        document.getElementById("temperature").innerText = `Temperature: ${data.main.temp}°C`;
+        document.getElementById("description").innerText = `Weather: ${data.weather[0].description}`;
+        document.getElementById("humidity").innerText = `Humidity: ${data.main.humidity}%`;
+        document.getElementById("wind").innerText = `Wind: ${data.wind.speed} km/h`;
+
+        const iconCode = data.weather[0].icon;
+        document.getElementById("icon").src = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+
+    } catch (err) {
+        console.error(err);
+    }
+}
